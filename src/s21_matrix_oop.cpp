@@ -11,7 +11,7 @@
  * @brief Стандартный конструктор без входных параметров.
  * Создает матрицу 3 на 3 и заполняет её нулями
  */
-S21Matrix::S21Matrix() : rows_(3), cols_(3) { create(); }
+S21Matrix::S21Matrix() : rows_(3), cols_(3) { Create(); }
 
 /**
  * @brief Конструктор с двумя входными параметрами.
@@ -22,9 +22,8 @@ S21Matrix::S21Matrix() : rows_(3), cols_(3) { create(); }
 S21Matrix::S21Matrix(int rows, int cols) : rows_(rows), cols_(cols) {
   if (rows_ <= 0 || cols_ <= 0) {
     throw std::bad_array_new_length();
-  } else {
-    create();
   }
+  Create();
 }
 
 /**
@@ -34,8 +33,8 @@ S21Matrix::S21Matrix(int rows, int cols) : rows_(rows), cols_(cols) {
  */
 S21Matrix::S21Matrix(const S21Matrix &other)
     : rows_(other.rows_), cols_(other.cols_) {
-  create();
-  copy(other);
+  Create();
+  Copy(other);
 }
 
 /**
@@ -58,7 +57,7 @@ S21Matrix::S21Matrix(S21Matrix &&other) {
  */
 S21Matrix::~S21Matrix() {
   if (isCreated) {
-    remove();
+    Remove();
   }
 }
 
@@ -70,13 +69,16 @@ S21Matrix::~S21Matrix() {
  */
 bool S21Matrix::EqMatrix(const S21Matrix &other) {
   bool equal = true;
-  if (rows_ != other.rows_ || cols_ != other.cols_) {
+  if (this == &other) {
+    return true;
+  }
+  if (rows_ != other.GetRow() || cols_ != other.GetCol()) {
     return false;
   } else {
     bool check = true;
-    for (int r = 0; r < rows_ && check; r++) {
-      for (int c = 0; c < cols_; c++) {
-        if (fabs(matrix_[r][c] - other.matrix_[r][c]) >= 1e-6) {
+    for (int row = 0; row < rows_ && check; row++) {
+      for (int col = 0; col < cols_; col++) {
+        if (fabs(matrix_[row][col] - other(row, col)) >= 1e-6) {
           equal = false;
           check = false;
         }
@@ -92,13 +94,12 @@ bool S21Matrix::EqMatrix(const S21Matrix &other) {
  * @param other матрица для сложения с текущей
  */
 void S21Matrix::SumMatrix(const S21Matrix &other) {
-  if (rows_ != other.rows_ || cols_ != other.cols_) {
+  if (rows_ != other.GetRow() || cols_ != other.GetCol()) {
     throw std::out_of_range("SumMatrix: Sizes of matrices are not the same!");
-  } else {
-    for (int r = 0; r < rows_; r++) {
-      for (int c = 0; c < cols_; c++) {
-        matrix_[r][c] += other.matrix_[r][c];
-      }
+  }
+  for (int row = 0; row < rows_; row++) {
+    for (int col = 0; col < cols_; col++) {
+      matrix_[row][col] += other(row, col);
     }
   }
 }
@@ -109,13 +110,12 @@ void S21Matrix::SumMatrix(const S21Matrix &other) {
  * @param other матрица для вычитания с текущей
  */
 void S21Matrix::SubMatrix(const S21Matrix &other) {
-  if (rows_ != other.rows_ || cols_ != other.cols_) {
+  if (rows_ != other.GetRow() || cols_ != other.GetCol()) {
     throw std::out_of_range("SubMatrix: Sizes of matrices are not the same!");
-  } else {
-    for (int r = 0; r < rows_; r++) {
-      for (int c = 0; c < cols_; c++) {
-        matrix_[r][c] -= other.matrix_[r][c];
-      }
+  }
+  for (int row = 0; row < rows_; row++) {
+    for (int col = 0; col < cols_; col++) {
+      matrix_[row][col] -= other(row, col);
     }
   }
 }
@@ -126,9 +126,9 @@ void S21Matrix::SubMatrix(const S21Matrix &other) {
  * @param num число на которое будет умножена матрица
  */
 void S21Matrix::MulNumber(const double num) {
-  for (int r = 0; r < rows_; r++) {
-    for (int c = 0; c < cols_; c++) {
-      matrix_[r][c] *= num;
+  for (int row = 0; row < rows_; row++) {
+    for (int col = 0; col < cols_; col++) {
+      matrix_[row][col] *= num;
     }
   }
 }
@@ -139,25 +139,20 @@ void S21Matrix::MulNumber(const double num) {
  * @param other матрица для умножения с текущей
  */
 void S21Matrix::MulMatrix(const S21Matrix &other) {
-  if (cols_ != other.rows_) {
+  if (cols_ != other.GetRow()) {
     throw std::out_of_range(
         "Columns of first matrix is not equal"
         "to rows of second matrix!");
-  } else {
-    S21Matrix tmp_this(*this);
-    this->remove();
-    this->rows_ = tmp_this.rows_;
-    this->cols_ = other.cols_;
-    this->create();
-
-    for (int i = 0; i < rows_; i++) {
-      for (int j = 0; j < cols_; j++) {
-        for (int k = 0; k < other.rows_; k++) {
-          matrix_[i][j] += tmp_this.matrix_[i][k] * other.matrix_[k][j];
-        }
-      }
+  }
+  S21Matrix result(this->rows_, other.GetCol());
+  for (int i = 0; i < result.GetRow(); i++) {
+    for (int j = 0; j < result.GetCol(); j++) {
+      for (int k = 0; k < other.GetRow(); k++)
+        result(i, j) += matrix_[i][k] * other(k, j);
     }
   }
+  this->SetCol(other.GetCol());
+  this->Copy(result);
 }
 
 /**
@@ -165,13 +160,13 @@ void S21Matrix::MulMatrix(const S21Matrix &other) {
  * @return Транспонированную матрицу текущей матрицы
  */
 S21Matrix S21Matrix::Transpose() {
-  S21Matrix Transpose_this(cols_, rows_);
-  for (int r = 0; r < rows_; r++) {
-    for (int c = 0; c < cols_; c++) {
-      Transpose_this.matrix_[c][r] = this->matrix_[r][c];
+  S21Matrix transpose_this(cols_, rows_);
+  for (int row = 0; row < rows_; row++) {
+    for (int col = 0; col < cols_; col++) {
+      transpose_this(col, row) = matrix_[row][col];
     }
   }
-  return Transpose_this;
+  return transpose_this;
 }
 
 /**
@@ -180,17 +175,16 @@ S21Matrix S21Matrix::Transpose() {
  */
 S21Matrix S21Matrix::CalcComplements() {
   if (rows_ != cols_) {
-    throw std::out_of_range("CalcComplements: Matrix is not a square!");
-  } else {
-    S21Matrix CalcComplementMatrix(rows_, cols_);
-    for (int r = 0; r < rows_; r++) {
-      for (int c = 0; c < cols_; c++) {
-        CalcComplementMatrix.matrix_[r][c] = this->calculateMinorItem(r, c);
-      }
-    }
-    CalcComplementMatrix.getAlgebraicAddition();
-    return CalcComplementMatrix;
+    throw std::logic_error("CalcComplements: Matrix is not a square!");
   }
+  S21Matrix CalcComplementMatrix(rows_, cols_);
+  for (int row = 0; row < rows_; row++) {
+    for (int col = 0; col < cols_; col++) {
+      CalcComplementMatrix(row, col) = this->CalculateMinorItem(row, col);
+    }
+  }
+  CalcComplementMatrix.MakeAlgebraicAddition();
+  return CalcComplementMatrix;
 }
 
 /**
@@ -199,11 +193,10 @@ S21Matrix S21Matrix::CalcComplements() {
  */
 double S21Matrix::Determinant() {
   if (rows_ != cols_) {
-    throw std::out_of_range("Determinant: Matrix is not a square!");
-  } else {
-    double determinant = getDeterminant(*this);
-    return determinant;
+    throw std::logic_error("Determinant: Matrix is not a square!");
   }
+  double determinant = GetDeterminant(*this);
+  return determinant;
 }
 
 /**
@@ -212,13 +205,12 @@ double S21Matrix::Determinant() {
  */
 S21Matrix S21Matrix::InverseMatrix() {
   double determinant = this->Determinant();
-  if (determinant == 0.0) {
-    throw std::out_of_range("InverseMatrix: Matrix determinant is zero!");
-  } else {
-    S21Matrix InverseMatrix((this->CalcComplements()).Transpose());
-    InverseMatrix.MulNumber(1 / fabs(determinant));
-    return InverseMatrix;
+  if (fabs(determinant) <= 1e-6) {
+    throw std::logic_error("InverseMatrix: Matrix determinant is zero!");
   }
+  S21Matrix InverseMatrix((this->CalcComplements()).Transpose());
+  InverseMatrix *= 1.0 / determinant;
+  return InverseMatrix;
 }
 
 /**
@@ -228,19 +220,19 @@ S21Matrix S21Matrix::InverseMatrix() {
  * меньше то текущая матрица будет просто обрезана
  * @param cols новое количество столбцов в текущей матрице
  */
-void S21Matrix::setCol(int cols) {
+void S21Matrix::SetCol(int cols) {
   if (cols <= 0) {
     throw std::out_of_range("setCol: 'cols' element less or equal zero!");
-  } else {
-    S21Matrix tmp_this(*this);
-    remove();
-    cols_ = cols;
-    create();
-    for (int r = 0; r < rows_; r++) {
-      for (int c = 0; c < cols_; c++) {
-        if (c < tmp_this.cols_) {
-          matrix_[r][c] = tmp_this.matrix_[r][c];
-        }
+  }
+  S21Matrix tmp_this(*this);
+  Remove();
+  cols_ = cols;
+  rows_ = tmp_this.GetRow();
+  Create();
+  for (int row = 0; row < rows_; row++) {
+    for (int col = 0; col < cols_; col++) {
+      if (col < tmp_this.GetCol()) {
+        matrix_[row][col] = tmp_this(row, col);
       }
     }
   }
@@ -253,19 +245,19 @@ void S21Matrix::setCol(int cols) {
  * то текущая матрица будет просто обрезана
  * @param rows новое количество строк в текущей матрице
  */
-void S21Matrix::setRow(int rows) {
+void S21Matrix::SetRow(int rows) {
   if (rows <= 0) {
     throw std::out_of_range("setRow: 'rows' element less or equal zero!");
-  } else {
-    S21Matrix tmp_this(*this);
-    remove();
-    rows_ = rows;
-    create();
-    for (int r = 0; r < rows_; r++) {
-      for (int c = 0; c < cols_; c++) {
-        if (r < tmp_this.rows_) {
-          matrix_[r][c] = tmp_this.matrix_[r][c];
-        }
+  }
+  S21Matrix tmp_this(*this);
+  Remove();
+  rows_ = rows;
+  cols_ = tmp_this.GetCol();
+  Create();
+  for (int row = 0; row < rows_; row++) {
+    for (int col = 0; col < cols_; col++) {
+      if (row < tmp_this.GetRow()) {
+        matrix_[row][col] = tmp_this(row, col);
       }
     }
   }

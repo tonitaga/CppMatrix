@@ -29,10 +29,10 @@ class S21Matrix {
       их изменения
   */
 
-  int getCol() const { return cols_; }
-  int getRow() const { return rows_; }
-  void setCol(int cols);
-  void setRow(int rows);
+  int GetCol() const { return cols_; }
+  int GetRow() const { return rows_; }
+  void SetCol(int cols);
+  void SetRow(int rows);
 
   /*
       Блок методов класса S21Matrix занимающихся
@@ -65,6 +65,7 @@ class S21Matrix {
   S21Matrix &operator*=(const S21Matrix &other);
   S21Matrix &operator*=(double num);
   double &operator()(int row, int col);
+  double operator()(int row, int col) const;
 
  private:
   /*
@@ -85,14 +86,13 @@ class S21Matrix {
       Блок приватных-support методов класса S21Matrix
   */
 
-  void create();
-  void remove();
-  void copy(const S21Matrix &other);
-  void initZero();
-  double getDeterminant(S21Matrix &other);
-  void getSmallerOrderMatrix(int row, int col, S21Matrix &minor);
-  double calculateMinorItem(int row, int col);
-  void getAlgebraicAddition();
+  void Create();
+  void Remove();
+  void Copy(const S21Matrix &other);
+  double GetDeterminant(S21Matrix &other);
+  void MakeSmallerOrderMatrix(int row, int col, S21Matrix &minor);
+  double CalculateMinorItem(int row, int col);
+  void MakeAlgebraicAddition();
 };
 
 #endif  // !SRC_S21_MATRIX_OOP_H

@@ -2,314 +2,252 @@
 
 #include "s21_matrix_oop.h"
 
-TEST(EqMatrixTest, HanglesInitedEqualMatrices) {
-  S21Matrix A;
-  /*   Initialize   */
-  A(0, 0) = 1.12345, A(0, 1) = 1.12346, A(0, 2) = 1.12347;
-  A(1, 0) = 2.12345, A(1, 1) = 2.12346, A(1, 2) = 2.12347;
-  A(2, 0) = 3.12345, A(2, 1) = 3.12346, A(2, 2) = 3.12347;
+/*
+    Информация о классе:
 
-  S21Matrix B = A;
-  bool result = A.EqMatrix(B);
-  ASSERT_EQ(true, result);
+    Стандартный конструктор без входных параметров создает матрицу 3 на 3 в
+   matrix также записывает обратную матрицу данной в i_matrix, также с матрицей
+    алгебраических дополнений и записывает в alg_matrix.
+
+    Конструктор с одним входным параметром status
+      При status = 0 матрица из стандартного конструктора (matrix)
+    обрезается с сохранением значений до размера 2 на 2
+      При status = 1 matrix будет иметь размер 3 на 3 с нулевыми значениями
+      При status = 2 matrix будет иметь размер 4 на 4 с другими значениями
+      При status = 3 в matrix будет лежать матрица 3 на 3 но ее значения будут
+    значениями квадрата матрицы (matrix) из стандартного конструктора
+      При status = 4 в matrix будет лежать матрица 3 на 3 но ее значения будут
+    значениями матрица (matrix) умноженной на 2 из стандартного конструктора
+      При status = 5 в matrix будет лежать матрица 2 на 3 и будет записан ее
+    трансонированный вариант в t_matrix
+
+    Важно! Там где НЕ упомянуто что значения i_matrix, t_matrix и
+    alg_matrix НАЙДЕНЫ их НЕ ИСПОЛЬЗОВАТЬ! Они будут иметь нулевые значения!
+*/
+class TestS21Matrix {
+ public:
+  TestS21Matrix() {
+    matrix(0, 0) = 7, matrix(0, 1) = 8, matrix(0, 2) = 3;
+    matrix(1, 0) = 5, matrix(1, 1) = 9, matrix(1, 2) = 1;
+    matrix(2, 0) = 9, matrix(2, 1) = 4, matrix(2, 2) = 2;
+
+    i_matrix(0, 0) = -0.150538, i_matrix(0, 1) = 0.0430108;
+    i_matrix(0, 2) = 0.204301, i_matrix(1, 0) = 0.0107527;
+    i_matrix(1, 1) = 0.139785, i_matrix(1, 2) = -0.0860215;
+    i_matrix(2, 0) = 0.655914, i_matrix(2, 1) = -0.473118;
+    i_matrix(2, 2) = -0.247312;
+
+    alg_matrix(0, 0) = 14, alg_matrix(0, 1) = -1, alg_matrix(0, 2) = -61;
+    alg_matrix(1, 0) = -4, alg_matrix(1, 1) = -13, alg_matrix(1, 2) = 44;
+    alg_matrix(2, 0) = -19, alg_matrix(2, 1) = 8, alg_matrix(2, 2) = 23;
+  }
+  TestS21Matrix(int status) {
+    if (status == 0) {
+      matrix.SetCol(2);
+      matrix.SetRow(2);
+      matrix(0, 0) = 7, matrix(0, 1) = 8;
+      matrix(1, 0) = 5, matrix(1, 1) = 9;
+    }
+    if (status == 1) {
+    }
+    if (status == 2) {
+      matrix.SetRow(4);
+      matrix.SetCol(4);
+      matrix(0, 0) = 1.2, matrix(1, 0) = 10.2, matrix(2, 0) = 5.8,
+                matrix(3, 0) = 2.6, matrix(0, 1) = 4.8, matrix(1, 1) = -6.7;
+      matrix(2, 1) = 3.45, matrix(3, 1) = -8.9, matrix(0, 2) = -3.2;
+      matrix(1, 2) = 1.9, matrix(2, 2) = -7.8, matrix(3, 2) = 2.2;
+      matrix(0, 3) = 9.08, matrix(1, 3) = 9.1, matrix(2, 3) = 0.34,
+                matrix(3, 3) = -1.5;
+    }
+    if (status == 3) {
+      matrix(0, 0) = 116, matrix(0, 1) = 140, matrix(0, 2) = 35;
+      matrix(1, 0) = 89, matrix(1, 1) = 125, matrix(1, 2) = 26;
+      matrix(2, 0) = 101, matrix(2, 1) = 116, matrix(2, 2) = 35;
+    }
+    if (status == 4) {
+      matrix(0, 0) = 14, matrix(0, 1) = 16, matrix(0, 2) = 6;
+      matrix(1, 0) = 10, matrix(1, 1) = 18, matrix(1, 2) = 2;
+      matrix(2, 0) = 18, matrix(2, 1) = 8, matrix(2, 2) = 4;
+    }
+    if (status == 5) {
+      matrix.SetRow(2);
+      matrix(0, 0) = 0, matrix(0, 1) = 1, matrix(0, 2) = 2;
+      matrix(1, 0) = 3, matrix(1, 1) = 4, matrix(1, 2) = 5;
+
+      t_matrix.SetCol(2);
+      t_matrix.SetRow(3);
+      t_matrix(0, 0) = 0, t_matrix(0, 1) = 3;
+      t_matrix(1, 0) = 1, t_matrix(1, 1) = 4;
+      t_matrix(2, 0) = 2, t_matrix(2, 1) = 5;
+    }
+  }
+  S21Matrix matrix;
+  S21Matrix t_matrix;
+  S21Matrix i_matrix;
+  S21Matrix alg_matrix;
+};
+
+TEST(EqMatrixTest, HanglesInitedEqualMatrices) {
+  TestS21Matrix A, B;
+  ASSERT_EQ(true, A.matrix.EqMatrix(B.matrix));
 }
 
 TEST(EqMatrixTest, HanglesInitedUnEqualMatrices) {
-  S21Matrix A;
-  /*   Initialize   */
-  A(0, 0) = 1.12345, A(0, 1) = 1.12346, A(0, 2) = 1.12347;
-  A(1, 0) = 2.12345, A(1, 1) = 2.12346, A(1, 2) = 2.12347;
-  A(2, 0) = 3.12345, A(2, 1) = 3.12346, A(2, 2) = 3.12347;
-
-  S21Matrix B = A;
-  B(1, 1) = 0;
-  bool result = A.EqMatrix(B);
-  ASSERT_EQ(false, result);
+  TestS21Matrix A, B;
+  B.matrix(0, 0) = A.matrix(0, 0) - 1;
+  ASSERT_EQ(false, A.matrix.EqMatrix(B.matrix));
 }
 
 TEST(SumMatrixTest, HanglesInitedMatrices) {
-  S21Matrix A(2, 2);
-  /*   Initialize   */
-  A(0, 0) = 2, A(0, 1) = 2;
-  A(1, 0) = 4, A(1, 1) = 4;
-
-  S21Matrix B = A * 2;
-  A.SumMatrix(A);
-  ASSERT_EQ(true, A.EqMatrix(B));
+  TestS21Matrix A;
+  TestS21Matrix B(4);
+  A.matrix.SumMatrix(A.matrix);
+  ASSERT_EQ(true, A.matrix.EqMatrix(B.matrix));
 }
 
 TEST(SubMatrixTest, HanglesInitedMatrices) {
-  S21Matrix A(2, 2);
-  /*   Initialize   */
-  A(0, 0) = 2, A(0, 1) = 2;
-  A(1, 0) = 4, A(1, 1) = 4;
-
-  S21Matrix B(2, 2);
-  A.SubMatrix(A);
-  ASSERT_EQ(true, A.EqMatrix(B));
+  TestS21Matrix A;
+  TestS21Matrix B(1);
+  A.matrix.SubMatrix(A.matrix);
+  ASSERT_EQ(true, A.matrix.EqMatrix(B.matrix));
 }
 
 TEST(MulMatrixTest, HanglesInitedMatrices) {
-  S21Matrix A(3, 2);
-  S21Matrix B(2, 3);
-  /*   Initialize   */
-  int k = 1;
-  for (int i = 0; i < A.getRow(); i++) {
-    for (int j = 0; j < A.getCol(); j++) {
-      A(i, j) = k++;
-    }
-  }
-  k = 0;
-  for (int i = 0; i < B.getRow(); i++) {
-    for (int j = 0; j < B.getCol(); j++) {
-      B(i, j) = k;
-      k += 2;
-    }
-  }
-  A.MulMatrix(B);
-  S21Matrix R(3, 3);
-  /*   Initialize   */
-  R(0, 0) = 12, R(0, 1) = 18, R(0, 2) = 24;
-  R(1, 0) = 24, R(1, 1) = 38, R(1, 2) = 52;
-  R(2, 0) = 36, R(2, 1) = 58, R(2, 2) = 80;
-  ASSERT_EQ(true, A.EqMatrix(R));
+  TestS21Matrix A;
+  TestS21Matrix B(3);
+  A.matrix.MulMatrix(A.matrix);
+  ASSERT_EQ(true, A.matrix.EqMatrix(B.matrix));
 }
 
 TEST(MulNumberTest, HanglesInitedMatrices) {
-  S21Matrix A;
-  /*   Initialize   */
-  for (int i = 0; i < A.getRow(); i++) {
-    for (int j = 0; j < A.getCol(); j++) {
-      A(i, j) = 1 + std::rand() % 10;
-    }
-  }
-  S21Matrix B = A * 2;
-  A.MulNumber(2);
-  ASSERT_EQ(true, A.EqMatrix(B));
+  TestS21Matrix A;
+  TestS21Matrix B(4);
+  A.matrix.MulNumber(2);
+  ASSERT_EQ(true, A.matrix.EqMatrix(B.matrix));
 }
 
 TEST(TransposeTest, HanglesInitedMatrices) {
-  S21Matrix A(2, 3);
-  /*   Initialize   */
-  int k = 0;
-  for (int i = 0; i < A.getRow(); i++) {
-    for (int j = 0; j < A.getCol(); j++) {
-      A(i, j) = k++;
-    }
-  }
-  S21Matrix C = A.Transpose();
-  S21Matrix B(3, 2);
-  /*   Initialize   */
-  B(0, 0) = 0, B(0, 1) = 3;
-  B(1, 0) = 1, B(1, 1) = 4;
-  B(2, 0) = 2, B(2, 1) = 5;
-  ASSERT_EQ(true, B.EqMatrix(C));
+  TestS21Matrix A(5);
+  S21Matrix B = A.matrix.Transpose();
+  ASSERT_EQ(true, B.EqMatrix(A.t_matrix));
 }
 
 TEST(CalcComplementsTest, HanglesInitedMatrices) {
-  S21Matrix A;
-  /*   Initialize   */
-  A(0, 0) = 1.0, A(0, 1) = 2.0, A(0, 2) = 3.0;
-  A(1, 0) = 0.0, A(1, 1) = 4.0, A(1, 2) = 2.0;
-  A(2, 0) = 5.0, A(2, 1) = 2.0, A(2, 2) = 1.0;
-
-  S21Matrix B = A.CalcComplements();
-  /*   Initialize   */
-  A(0, 0) = 0.0, A(0, 1) = 10.0, A(0, 2) = -20.0;
-  A(1, 0) = 4.0, A(1, 1) = -14.0, A(1, 2) = 8.0;
-  A(2, 0) = -8.0, A(2, 1) = -2.0, A(2, 2) = 4.0;
-  ASSERT_EQ(true, A.EqMatrix(B));
-}
-
-TEST(DeterminantTest, HanglesInitedMatrices3xx3) {
-  S21Matrix A(3, 3);
-  /*   Initialize   */
-  A(0, 0) = 1.38, A(1, 0) = -6.7, A(2, 0) = 12.5;
-  A(0, 1) = 5.2, A(1, 1) = -7.9, A(2, 1) = 13.7;
-  A(0, 2) = 1.3, A(1, 2) = 8.976, A(2, 2) = 2.34;
-
-  /* |A| = 478.802664 */
-  ASSERT_DOUBLE_EQ(A.Determinant(), 478.802664);
-}
-
-TEST(DeterminantTest, HanglesInitedMatrices4x4) {
-  S21Matrix A(4, 4);
-  /*   Initialize   */
-  A(0, 0) = 1.2, A(1, 0) = 10.2, A(2, 0) = 5.8, A(3, 0) = 2.6;
-  A(0, 1) = 4.8, A(1, 1) = -6.7, A(2, 1) = 3.45, A(3, 1) = -8.9;
-  A(0, 2) = -3.2, A(1, 2) = 1.9, A(2, 2) = -7.8, A(3, 2) = 2.2;
-  A(0, 3) = 9.08, A(1, 3) = 9.1, A(2, 3) = 0.34, A(3, 3) = -1.5;
-
-  /* |A| = 3976.58848 */
-  ASSERT_DOUBLE_EQ(A.Determinant(), 3976.58848);
+  TestS21Matrix A;
+  S21Matrix B = A.matrix.CalcComplements();
+  ASSERT_EQ(true, B.EqMatrix(A.alg_matrix));
 }
 
 TEST(DeterminantTest, HanglesInitedMatrices3x3) {
-  S21Matrix A(3, 3);
-  /*   Initialize   */
-  A(0, 0) = 2, A(0, 1) = 3.4, A(0, 2) = 87.1;
-  A(1, 0) = -1.9, A(1, 1) = 3.8, A(1, 2) = -3;
-  A(2, 0) = 9.5, A(2, 1) = -5.6, A(2, 2) = 4;
+  TestS21Matrix A(3);
+  double determinant = A.matrix.Determinant();
+  ASSERT_DOUBLE_EQ(determinant, 8649.0);
+}
 
-  /* |A| =  -2291.826*/
-  ASSERT_DOUBLE_EQ(A.Determinant(), -2291.826);
+TEST(MoveConstructor, HanglesInitedMatrices) {
+  S21Matrix A;
+  A(0, 0) = 7;
+  S21Matrix B(std::move(A));
+  ASSERT_EQ(true, B(0, 0) == 7);
+}
+
+TEST(DeterminantTest, HanglesInitedMatrices4x4) {
+  TestS21Matrix A(2);
+  double determinant = A.matrix.Determinant();
+  ASSERT_DOUBLE_EQ(determinant, 3976.58848);
 }
 
 TEST(InverseMatrixTest, HanglesInitedMatrices3x3) {
-  S21Matrix A(3, 3);
-  /*   Initialize   */
-  A(0, 0) = 1, A(0, 1) = 3, A(0, 2) = 6;
-  A(1, 0) = 2, A(1, 1) = 5, A(1, 2) = 8;
-  A(2, 0) = 3, A(2, 1) = 9, A(2, 2) = 9;
-
-  A = A.InverseMatrix();
-  S21Matrix B(3, 3);
-  /*   Initialize   */
-  B(0, 0) = -3, B(0, 1) = 3, B(0, 2) = -2 / 3.0;
-  B(1, 0) = 2 / 3.0, B(1, 1) = -1, B(1, 2) = 4 / 9.0;
-  B(2, 0) = 1 / 3.0, B(2, 1) = 0, B(2, 2) = -1 / 9.0;
-  ASSERT_EQ(true, B.EqMatrix(A));
+  TestS21Matrix A;
+  S21Matrix C = A.matrix.InverseMatrix();
+  for (int i = 0; i < C.GetRow(); i++) {
+    for (int j = 0; j < C.GetCol(); j++) {
+      std::cout << C(i, j) << "\t";
+    }
+    std::cout << std::endl;
+  }
+  ASSERT_EQ(true, C.EqMatrix(A.i_matrix));
 }
 
 TEST(OperatorEqual, HanglesInitedMatrices) {
-  S21Matrix A(4, 4);
-  /*   Initialize   */
-  A(0, 0) = 1.2, A(1, 0) = 10.2, A(2, 0) = 5.8, A(3, 0) = 2.6;
-  A(0, 1) = 4.8, A(1, 1) = -6.7, A(2, 1) = 3.45, A(3, 1) = -8.9;
-  A(0, 2) = -3.2, A(1, 2) = 1.9, A(2, 2) = -7.8, A(3, 2) = 2.2;
-  A(0, 3) = 9.08, A(1, 3) = 9.1, A(2, 3) = 0.34, A(3, 3) = -1.5;
-  S21Matrix B(A);
-  bool eq = false;
-  if (A == B) {
-    eq = true;
+  TestS21Matrix A, B;
+  bool status = false;
+  if (A.matrix == B.matrix) {
+    status = true;
   }
-  A *B;
-  ASSERT_EQ(true, eq);
+  ASSERT_EQ(true, status);
 }
 
 TEST(OpetatorCopy, HanglesInitedMatrices) {
-  S21Matrix A(3, 3);
-  /*   Initialize   */
-  A(0, 0) = 1, A(0, 1) = 3, A(0, 2) = 6;
-  A(1, 0) = 2, A(1, 1) = 5, A(1, 2) = 8;
-  A(2, 0) = 3, A(2, 1) = 9, A(2, 2) = 9;
-  S21Matrix B;
-  B = A;
-  ASSERT_EQ(true, B.EqMatrix(A));
+  TestS21Matrix A;
+  TestS21Matrix B(1);
+  B.matrix = A.matrix;
+  ASSERT_EQ(true, B.matrix.EqMatrix(A.matrix));
 }
 
 TEST(OpetatorSum, HanglesInitedMatrices) {
-  S21Matrix A(3, 3);
-  /*   Initialize   */
-  A(0, 0) = 1, A(0, 1) = 3, A(0, 2) = 6;
-  A(1, 0) = 2, A(1, 1) = 5, A(1, 2) = 8;
-  A(2, 0) = 3, A(2, 1) = 9, A(2, 2) = 9;
-  S21Matrix B;
-  B += A;
-  ASSERT_EQ(true, B.EqMatrix(A));
+  TestS21Matrix A, B;
+  A.matrix += B.matrix;
+  B.matrix *= 2;
+  ASSERT_EQ(true, B.matrix.EqMatrix(A.matrix));
 }
 
 TEST(OpetatorSub, HanglesInitedMatrices) {
-  S21Matrix A(3, 3);
-  /*   Initialize   */
-  A(0, 0) = 1, A(0, 1) = 3, A(0, 2) = 6;
-  A(1, 0) = 2, A(1, 1) = 5, A(1, 2) = 8;
-  A(2, 0) = 3, A(2, 1) = 9, A(2, 2) = 9;
-  S21Matrix B;
-  B = A;
-  B -= A;
-  B += A;
-  ASSERT_EQ(true, B.EqMatrix(A));
+  TestS21Matrix A;
+  TestS21Matrix B(1);
+  A.matrix -= A.matrix;
+  ASSERT_EQ(true, B.matrix.EqMatrix(A.matrix));
 }
 
 TEST(OpetatorPlus, HanglesInitedMatrices) {
-  S21Matrix A(3, 3);
-  /*   Initialize   */
-  A(0, 0) = 1, A(0, 1) = 3, A(0, 2) = 6;
-  A(1, 0) = 2, A(1, 1) = 5, A(1, 2) = 8;
-  A(2, 0) = 3, A(2, 1) = 9, A(2, 2) = 9;
-  S21Matrix B;
-  B = A + A;
-  A.MulNumber(2);
-  ASSERT_EQ(true, B.EqMatrix(A));
+  TestS21Matrix A, B;
+  A.matrix = A.matrix + A.matrix;
+  B.matrix *= 2;
+  ASSERT_EQ(true, B.matrix.EqMatrix(A.matrix));
 }
 
 TEST(OpetatorMinus, HanglesInitedMatrices) {
-  S21Matrix A(3, 3);
-  S21Matrix B; /* Zero Matrix */
-  S21Matrix C; /* Zero Matrix */
-  /*   Initialize   */
-  A(0, 0) = 1, A(0, 1) = 3, A(0, 2) = 6;
-  A(1, 0) = 2, A(1, 1) = 5, A(1, 2) = 8;
-  A(2, 0) = 3, A(2, 1) = 9, A(2, 2) = 9;
-  B = A - A;
-  ASSERT_EQ(true, B.EqMatrix(C));
+  TestS21Matrix A;
+  TestS21Matrix B(1);
+  A.matrix = A.matrix - A.matrix;
+  ASSERT_EQ(true, B.matrix.EqMatrix(A.matrix));
 }
 
 TEST(OpetatorMulMatrices, HanglesInitedMatrices) {
-  S21Matrix A(3, 2);
-  S21Matrix B(2, 3);
-  /*   Initialize   */
-  int k = 1;
-  for (int i = 0; i < A.getRow(); i++) {
-    for (int j = 0; j < A.getCol(); j++) {
-      A(i, j) = k++;
-    }
-  }
-  k = 0;
-  for (int i = 0; i < B.getRow(); i++) {
-    for (int j = 0; j < B.getCol(); j++) {
-      B(i, j) = k;
-      k += 2;
-    }
-  }
-  A *= B;
-  S21Matrix R(3, 3);
-  /*   Initialize   */
-  R(0, 0) = 12, R(0, 1) = 18, R(0, 2) = 24;
-  R(1, 0) = 24, R(1, 1) = 38, R(1, 2) = 52;
-  R(2, 0) = 36, R(2, 1) = 58, R(2, 2) = 80;
-  ASSERT_EQ(true, A.EqMatrix(R));
+  TestS21Matrix A;
+  TestS21Matrix B(3);
+  A.matrix *= A.matrix;
+  ASSERT_EQ(true, A.matrix.EqMatrix(B.matrix));
+}
+
+TEST(OpetatorStar, HanglesInitedMatrices) {
+  TestS21Matrix A;
+  TestS21Matrix B(3);
+  A.matrix = A.matrix * A.matrix;
+  ASSERT_EQ(true, A.matrix.EqMatrix(B.matrix));
+}
+
+TEST(OperatorStar2, HanglesInitedMatrices) {
+  TestS21Matrix A;
+  TestS21Matrix B(4);
+  A.matrix = A.matrix * 2;
+  ASSERT_EQ(true, A.matrix.EqMatrix(B.matrix));
 }
 
 TEST(OpetatorMulNum, HanglesInitedMatrices) {
-  S21Matrix R(3, 3);
-  /*   Initialize   */
-  R(0, 0) = 12, R(0, 1) = 18, R(0, 2) = 24;
-  R(1, 0) = 24, R(1, 1) = 38, R(1, 2) = 52;
-  R(2, 0) = 36, R(2, 1) = 58, R(2, 2) = 80;
-  S21Matrix B;
-  B = R * 2;
-  R *= 2;
-  ASSERT_EQ(true, B.EqMatrix(R));
+  TestS21Matrix A;
+  TestS21Matrix B(4);
+  A.matrix *= 2;
+  ASSERT_EQ(true, A.matrix.EqMatrix(B.matrix));
 }
 
-TEST(SetCol, HanglesInitedMatrices) {
-  S21Matrix A;
-  A(0, 0) = 1, A(0, 1) = 3, A(0, 2) = 6;
-  A(1, 0) = 2, A(1, 1) = 5, A(1, 2) = 8;
-  A(2, 0) = 3, A(2, 1) = 9, A(2, 2) = 9;
-  A.setCol(2);
-
-  S21Matrix B(3, 2);
-  B(0, 0) = 1, B(0, 1) = 3;
-  B(1, 0) = 2, B(1, 1) = 5;
-  B(2, 0) = 3, B(2, 1) = 9;
-  ASSERT_EQ(true, A == B);
-}
-
-TEST(SetRow, HanglesInitedMatrices) {
-  S21Matrix A(2, 2);
-  A(0, 0) = 1, A(0, 1) = 3;
-  A(1, 0) = 2, A(1, 1) = 5;
-  A.setRow(4);
-
-  S21Matrix B(4, 2);
-  B(0, 0) = 1, B(0, 1) = 3;
-  B(1, 0) = 2, B(1, 1) = 5;
-  B(2, 0) = 0, B(2, 1) = 0;
-  B(3, 0) = 0, B(3, 1) = 0;
-  ASSERT_EQ(true, A == B);
+TEST(SetColRow, HanglesInitedMatrices) {
+  TestS21Matrix A;
+  TestS21Matrix B(0);
+  A.matrix.SetCol(2);
+  A.matrix.SetRow(2);
+  ASSERT_EQ(true, A.matrix == B.matrix);
 }
 
 int main(int argc, char **argv) {

@@ -8,54 +8,25 @@
 /===============================================================*/
 
 S21Matrix S21Matrix::operator+(const S21Matrix &other) {
-  S21Matrix result(rows_, cols_);
-  if (rows_ != other.rows_ || cols_ != other.cols_) {
-    throw std::out_of_range("operator+ : Sizes of matrices are not the same!");
-  } else {
-    for (int r = 0; r < rows_; r++) {
-      for (int c = 0; c < cols_; c++) {
-        result.matrix_[r][c] = this->matrix_[r][c] + other.matrix_[r][c];
-      }
-    }
-  }
+  S21Matrix result(*this); /* Coping this matrix to result */
+  result.SumMatrix(other);
   return result;
 }
 
 S21Matrix S21Matrix::operator-(const S21Matrix &other) {
-  S21Matrix result(rows_, cols_);
-  if (rows_ != other.rows_ || cols_ != other.cols_) {
-    throw std::out_of_range("operator+ : Sizes of matrices are not the same!");
-  } else {
-    for (int r = 0; r < rows_; r++) {
-      for (int c = 0; c < cols_; c++) {
-        result.matrix_[r][c] = this->matrix_[r][c] - other.matrix_[r][c];
-      }
-    }
-  }
+  S21Matrix result(*this); /* Coping this matrix to result */
+  result.SubMatrix(other);
   return result;
 }
 
 S21Matrix S21Matrix::operator*(const S21Matrix &other) {
-  S21Matrix result(rows_, other.cols_);
-  if (cols_ != other.rows_) {
-    throw std::out_of_range(
-        "Columns of first matrix is not equal"
-        "to rows of second matrix!");
-  } else {
-    for (int i = 0; i < result.rows_; i++) {
-      for (int j = 0; j < result.cols_; j++) {
-        for (int k = 0; k < other.rows_; k++) {
-          result.matrix_[i][j] = this->matrix_[i][k] * other.matrix_[k][j];
-        }
-      }
-    }
-  }
+  S21Matrix result(*this); /* Coping this matrix to result */
+  result.MulMatrix(other);
   return result;
 }
 
 S21Matrix S21Matrix::operator*(const double num) const {
-  S21Matrix result(rows_, cols_);
-  result.copy(*this);
+  S21Matrix result(*this); /* Coping this matrix to result */
   result.MulNumber(num);
   return result;
 }
@@ -65,10 +36,13 @@ bool S21Matrix::operator==(const S21Matrix &other) {
 }
 
 S21Matrix &S21Matrix::operator=(const S21Matrix &other) {
-  remove();
-  rows_ = other.rows_, cols_ = other.cols_;
-  create();
-  copy(other);
+  if (*this == other) {
+    return *this;
+  }
+  Remove(); /* Removed this matrix to create a new one */
+  rows_ = other.GetRow(), cols_ = other.GetCol();
+  Create();
+  Copy(other); /* Coping other matrix to this one */
   return *this;
 }
 
@@ -93,9 +67,16 @@ S21Matrix &S21Matrix::operator*=(double num) {
 }
 
 double &S21Matrix::operator()(int row, int col) {
-  if ((row >= rows_ || row < 0) || (col >= cols_ || col < 0)) {
+  if (row < 0 || row >= rows_ || col < 0 || col >= cols_) {
     throw std::out_of_range("Row or Col number out of size of matrix!");
-  } else {
-    return matrix_[row][col];
   }
+  return matrix_[row][col];
+}
+
+/* Operator() overload for "const S21Matrix" */
+double S21Matrix::operator()(int row, int col) const {
+  if (row < 0 || row >= rows_ || col < 0 || col >= cols_) {
+    throw std::out_of_range("Row or Col number out of size of matrix!");
+  }
+  return matrix_[row][col];
 }

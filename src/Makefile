@@ -40,6 +40,7 @@ clean:
 	@rm -rf *.gcno
 	@rm -rf *.info
 	@rm -rf gcov_report
+	@rm -rf report
 
 
 
